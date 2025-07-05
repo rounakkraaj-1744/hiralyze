@@ -54,11 +54,6 @@ export default function TalentManagerDashboard() {
           </nav>
         </div>
 
-        <div className="absolute bottom-6 left-6 right-6">
-          <Link href="/post-job">
-            <Button className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-full">Post a job</Button>
-          </Link>
-        </div>
       </div>
 
       {/* Main Content */}
