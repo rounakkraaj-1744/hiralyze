@@ -39,7 +39,7 @@ export default function JobDetailPage() {
                   className="pl-10 pr-4 py-2 bg-green-50 border border-green-200 rounded-md text-sm"
                 />
               </div>
-              <Button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2">Post a job</Button>
+              
               <Avatar className="h-8 w-8">
                 <AvatarImage src="/placeholder.svg?height=32&width=32" />
                 <AvatarFallback>U</AvatarFallback>
