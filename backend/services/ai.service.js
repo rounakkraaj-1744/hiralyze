@@ -10,20 +10,17 @@ class AIService {
 
   async processResumeAsync(applicationId, resumePath, jobId) {
     try {
-      // Get job details
       const job = await jobService.getJobById(jobId)
       if (!job) {
         throw new Error("Job not found")
       }
 
-      // Prepare request data
       const requestData = {
         resume_path: resumePath,
         job_description: job.description,
         job_requirements: job.requirements || [],
       }
 
-      // Call AI service
       const response = await axios.post(`${this.aiServiceUrl}/process-resume`, requestData, {
         timeout: 60000, // 60 seconds timeout
       })
