@@ -1,7 +1,7 @@
 {
   "name": "hr-portal-backend",
   "version": "1.0.0",
-  "description": "Backend for HR Portal application with MVC architecture",
+  "description": "Backend for Hiralyze application with MVC architecture",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
@@ -42,6 +42,6 @@
     "eslint": "^8.49.0"
   },
   "keywords": ["hr", "portal", "recruitment", "nodejs", "express", "mongodb", "mvc"],
-  "author": "HR Portal Team",
+  "author": "Hiralyze Team",
   "license": "MIT"
 }

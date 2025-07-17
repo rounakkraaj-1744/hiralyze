@@ -17,7 +17,7 @@ import json
 import re
 from datetime import datetime
 
-app = FastAPI(title="HR Portal AI Agents", version="1.0.0")
+app = FastAPI(title="Hiralyze AI Agents", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,

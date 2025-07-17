@@ -8,9 +8,11 @@ import { Toaster } from "@/components/ui/toaster"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "HR Portal - Complete HR Management Solution",
-  description:
-    "Streamline your hiring process, manage talent effectively, and build amazing teams with our comprehensive HR management platform.",
+  title: "Hiralyze - Complete HR Management Solution",
+  description: "Streamline your hiring process, manage talent effectively, and build amazing teams with our comprehensive HR management platform.",
+  icons: {
+    icon: '/logo.png',
+  },
 }
 
 export default function RootLayout({

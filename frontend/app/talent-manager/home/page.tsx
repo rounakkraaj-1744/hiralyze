@@ -93,7 +93,7 @@ export default function TalentManagerHome() {
             <div className="flex items-center">
               <Link href="/" className="flex items-center">
                 <Building2 className="h-8 w-8 text-amber-600" />
-                <span className="ml-2 text-xl font-bold text-gray-900">HR Portal</span>
+                <span className="ml-2 text-xl font-bold text-gray-900">Hiralyze</span>
               </Link>
               <span className="ml-4 text-gray-400">|</span>
               <span className="ml-4 text-gray-600 font-medium">Talent Manager Home</span>

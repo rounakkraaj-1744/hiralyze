@@ -20,18 +20,18 @@ logger = setup_logging()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager"""
-    logger.info("Starting HR Portal AI Service")
+    logger.info("Starting Hiralyze AI Service")
     
     # Initialize agent orchestrator
     app.state.agent_orchestrator = AgentOrchestrator()
     
     yield
     
-    logger.info("Shutting down HR Portal AI Service")
+    logger.info("Shutting down Hiralyze AI Service")
 
 # Create FastAPI app
 app = FastAPI(
-    title="HR Portal AI Service",
+    title="Hiralyze AI Service",
     description="AI-powered resume analysis and job matching service",
     version="1.0.0",
     lifespan=lifespan

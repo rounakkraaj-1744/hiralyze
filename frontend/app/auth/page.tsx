@@ -30,7 +30,7 @@ export default function AuthPage() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center space-x-2 mb-8">
             <BarChart3 className="h-6 w-6 text-gray-900" />
-            <span className="text-lg font-semibold text-gray-900">TalentLink</span>
+            <span className="text-lg font-semibold text-gray-900">Hiralyze</span>
           </Link>
           <h1 className="text-2xl font-semibold text-gray-900 mb-2">Welcome Back</h1>
           <p className="text-gray-600">Sign in to your account or create a new one</p>
