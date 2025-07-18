@@ -1,10 +1,9 @@
-const messageService = require("../services/message.service")
-const { ApiResponse } = require("../utils/apiResponse")
-const { ApiError } = require("../utils/apiError")
-const { asyncHandler } = require("../utils/asyncHandler")
+import messageService from "../services/message.service.js"
+import { ApiResponse } from "../utils/apiResponse.js"
+import { ApiError } from "../utils/apiError.js"
+import { asyncHandler } from "../utils/asyncHandler.js"
 
 class MessageController {
-  // Get user conversations
   getConversations = asyncHandler(async (req, res) => {
     const userId = req.user.id
     const page = Number.parseInt(req.query.page) || 1
@@ -178,4 +177,4 @@ class MessageController {
   })
 }
 
-module.exports = new MessageController()
+export default new MessageController()

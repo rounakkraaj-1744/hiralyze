@@ -1,8 +1,8 @@
-const applicationService = require("../services/application.service")
-const aiService = require("../services/ai.service")
-const { ApiResponse } = require("../utils/apiResponse")
-const { ApiError } = require("../utils/apiError")
-const { asyncHandler } = require("../utils/asyncHandler")
+import applicationService from "../services/application.service.js"
+import aiService from "../services/ai.service.js"
+import { ApiResponse } from "../utils/apiResponse.js"
+import { ApiError } from "../utils/apiError.js"
+import { asyncHandler } from "../utils/asyncHandler.js"
 
 class ApplicationController {
   // Apply to job
@@ -50,7 +50,7 @@ class ApplicationController {
     }
 
     // Check if user owns the job
-    const jobService = require("../services/job.service")
+    const jobService = (await import("../services/job.service.js")).default
     const job = await jobService.getJobById(jobId)
 
     if (!job) {
@@ -204,7 +204,7 @@ class ApplicationController {
     const jobId = req.params.jobId
 
     // Check if user owns the job
-    const jobService = require("../services/job.service")
+    const jobService = (await import("../services/job.service.js")).default
     const job = await jobService.getJobById(jobId)
 
     if (!job) {
@@ -221,4 +221,4 @@ class ApplicationController {
   })
 }
 
-module.exports = new ApplicationController()
+export default new ApplicationController()

@@ -1,6 +1,8 @@
-require("dotenv").config()
-const App = require("./app")
-const logger = require("./utils/logger")
+import dotenv from "dotenv"
+import App from "./app.js"
+import logger from "../utils/logger.js"
+
+dotenv.config()
 
 process.on("uncaughtException", (err) => {
   logger.error("Uncaught Exception:", err)
@@ -12,7 +14,7 @@ process.on("unhandledRejection", (err) => {
   process.exit(1)
 })
 
-const app = new App()
+const app = await App.create()
 app.listen()
 
 process.on("SIGTERM", () => {

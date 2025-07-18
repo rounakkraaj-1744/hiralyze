@@ -1,7 +1,7 @@
-const Message = require("../models/Message.model")
-const Conversation = require("../models/Conversation.model")
-const { ApiError } = require("../utils/apiError")
-const logger = require("../utils/logger")
+import Message from "../models/Message.model.js"
+import Conversation from "../models/Conversation.model.js"
+import { ApiError } from "../utils/apiError.js"
+import logger from "../utils/logger.js"
 
 class MessageService {
   async createMessage(messageData) {
@@ -208,4 +208,4 @@ class MessageService {
   }
 }
 
-module.exports = new MessageService()
+export default new MessageService()

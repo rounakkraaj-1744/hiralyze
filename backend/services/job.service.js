@@ -1,7 +1,7 @@
-const Job = require("../models/Job.model")
-const Application = require("../models/Application.model")
-const { ApiError } = require("../utils/apiError")
-const logger = require("../utils/logger")
+import Job from "../models/Job.model.js"
+import Application from "../models/Application.model.js"
+import { ApiError } from "../utils/apiError.js"
+import logger from "../utils/logger.js"
 
 class JobService {
   async getJobs(filters) {
@@ -275,4 +275,4 @@ class JobService {
   }
 }
 
-module.exports = new JobService()
+export default new JobService()

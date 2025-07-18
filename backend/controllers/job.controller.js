@@ -1,11 +1,10 @@
-const jobService = require("../services/job.service")
-const { ApiResponse } = require("../utils/apiResponse")
-const { ApiError } = require("../utils/apiError")
-const { asyncHandler } = require("../utils/asyncHandler")
-const { validateJobData } = require("../validators/job.validator")
+import jobService from "../services/job.service.js"
+import { ApiResponse } from "../utils/apiResponse.js"
+import { ApiError } from "../utils/apiError.js"
+import { asyncHandler } from "../utils/asyncHandler.js"
+import { validateJobData } from "../validators/job.validator.js"
 
 class JobController {
-  // Get all jobs with filters
   getJobs = asyncHandler(async (req, res) => {
     const filters = {
       page: Number.parseInt(req.query.page) || 1,
@@ -29,7 +28,6 @@ class JobController {
     res.json(new ApiResponse(200, result, "Jobs retrieved successfully"))
   })
 
-  // Get single job
   getJob = asyncHandler(async (req, res) => {
     const jobId = req.params.id
     const job = await jobService.getJobById(jobId)
@@ -38,7 +36,6 @@ class JobController {
       throw new ApiError(404, "Job not found")
     }
 
-    // Increment view count if user is not the job poster
     if (!req.user || job.postedBy.toString() !== req.user.id) {
       await job.incrementViews()
     }
@@ -46,7 +43,6 @@ class JobController {
     res.json(new ApiResponse(200, { job }, "Job retrieved successfully"))
   })
 
-  // Create new job
   createJob = asyncHandler(async (req, res) => {
     const { error } = validateJobData(req.body)
     if (error) {
@@ -63,12 +59,10 @@ class JobController {
     res.status(201).json(new ApiResponse(201, { job }, "Job created successfully"))
   })
 
-  // Update job
   updateJob = asyncHandler(async (req, res) => {
     const jobId = req.params.id
     const updateData = req.body
 
-    // Check if user owns the job
     const existingJob = await jobService.getJobById(jobId)
     if (!existingJob) {
       throw new ApiError(404, "Job not found")
@@ -83,11 +77,9 @@ class JobController {
     res.json(new ApiResponse(200, { job }, "Job updated successfully"))
   })
 
-  // Delete job
   deleteJob = asyncHandler(async (req, res) => {
     const jobId = req.params.id
 
-    // Check if user owns the job
     const existingJob = await jobService.getJobById(jobId)
     if (!existingJob) {
       throw new ApiError(404, "Job not found")
@@ -102,7 +94,6 @@ class JobController {
     res.json(new ApiResponse(200, null, "Job deleted successfully"))
   })
 
-  // Get jobs posted by current user
   getMyJobs = asyncHandler(async (req, res) => {
     const userId = req.user.id
     const filters = {
@@ -118,11 +109,9 @@ class JobController {
     res.json(new ApiResponse(200, result, "My jobs retrieved successfully"))
   })
 
-  // Get job statistics
   getJobStats = asyncHandler(async (req, res) => {
     const jobId = req.params.id
 
-    // Check if user owns the job
     const job = await jobService.getJobById(jobId)
     if (!job) {
       throw new ApiError(404, "Job not found")
@@ -137,7 +126,6 @@ class JobController {
     res.json(new ApiResponse(200, { stats }, "Job statistics retrieved successfully"))
   })
 
-  // Toggle job status
   toggleJobStatus = asyncHandler(async (req, res) => {
     const jobId = req.params.id
     const { status } = req.body
@@ -146,7 +134,6 @@ class JobController {
       throw new ApiError(400, "Invalid status")
     }
 
-    // Check if user owns the job
     const job = await jobService.getJobById(jobId)
     if (!job) {
       throw new ApiError(404, "Job not found")
@@ -161,7 +148,6 @@ class JobController {
     res.json(new ApiResponse(200, { job: updatedJob }, "Job status updated successfully"))
   })
 
-  // Get similar jobs
   getSimilarJobs = asyncHandler(async (req, res) => {
     const jobId = req.params.id
     const limit = Number.parseInt(req.query.limit) || 5
@@ -172,4 +158,4 @@ class JobController {
   })
 }
 
-module.exports = new JobController()
+export default new JobController()

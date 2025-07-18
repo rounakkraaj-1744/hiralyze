@@ -1,7 +1,7 @@
-const multer = require("multer")
-const path = require("path")
-const fs = require("fs")
-const { ApiError } = require("../utils/apiError")
+import multer from "multer"
+import path from "path"
+import fs from "fs"
+import { ApiError } from "../utils/apiError.js"
 
 // Ensure upload directories exist
 const uploadDirs = {
@@ -77,4 +77,4 @@ const upload = multer({
   },
 })
 
-module.exports = { upload }
+export { upload }

@@ -1,7 +1,7 @@
 import axios from "axios"
-import applicationService from "./application.service"
-import jobService from "./job.service"
-import logger from "../utils/logger"
+import applicationService from "./application.service.js"
+import jobService from "./job.service.js"
+import logger from "../utils/logger.js"
 
 class AIService {
   constructor() {
@@ -120,4 +120,4 @@ class AIService {
   }
 }
 
-module.exports = new AIService()
+export default new AIService()

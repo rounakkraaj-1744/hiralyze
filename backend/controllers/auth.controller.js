@@ -1,13 +1,12 @@
 import passport from "passport"
-import authService from "../services/auth.service"
-import userService from"../services/user.service"
-import { ApiResponse } from "../utils/apiResponse"
-import { ApiError } from "../utils/apiError"
-import { asyncHandler } from "../utils/asyncHandler"
-import logger from "../utils/logger"
+import authService from "../services/auth.service.js"
+import userService from "../services/user.service.js"
+import { ApiResponse } from "../utils/apiResponse.js"
+import { ApiError } from "../utils/apiError.js"
+import { asyncHandler } from "../utils/asyncHandler.js"
+import logger from "../utils/logger.js"
 
 class AuthController {
-  // Google OAuth
   googleAuth = passport.authenticate("google", {
     scope: ["profile", "email"],
   })
@@ -29,7 +28,6 @@ class AuthController {
           return res.redirect(`${process.env.FRONTEND_URL}/auth?error=login_failed`)
         }
 
-        // Update last login
         user.updateLastLogin()
 
         return res.redirect(`${process.env.FRONTEND_URL}/dashboard`)
@@ -37,7 +35,6 @@ class AuthController {
     })(req, res, next)
   })
 
-  // LinkedIn OAuth
   linkedinAuth = passport.authenticate("linkedin")
 
   linkedinCallback = asyncHandler(async (req, res, next) => {
@@ -57,7 +54,6 @@ class AuthController {
           return res.redirect(`${process.env.FRONTEND_URL}/auth?error=login_failed`)
         }
 
-        // Update last login
         user.updateLastLogin()
 
         return res.redirect(`${process.env.FRONTEND_URL}/dashboard`)
@@ -65,7 +61,6 @@ class AuthController {
     })(req, res, next)
   })
 
-  // Local login
   login = asyncHandler(async (req, res) => {
     const { email, password } = req.body
 
@@ -216,4 +211,4 @@ class AuthController {
   })
 }
 
-module.exports = new AuthController()
+export default new AuthController()

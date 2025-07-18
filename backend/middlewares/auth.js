@@ -29,4 +29,4 @@ const optionalAuth = (req, res, next) => {
   next()
 }
 
-module.exports = {requireAuth, requireRole, optionalAuth}
+export { requireAuth, requireRole, optionalAuth }

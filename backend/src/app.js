@@ -1,44 +1,57 @@
-const express = require("express")
-const cors = require("cors")
-const helmet = require("helmet")
-const compression = require("compression")
-const rateLimit = require("express-rate-limit")
-const mongoSanitize = require("express-mongo-sanitize")
-const xss = require("xss-clean")
-const hpp = require("hpp")
-const morgan = require("morgan")
-const path = require("path")
+import express from "express"
+import cors from "cors"
+import helmet from "helmet"
+import compression from "compression"
+import rateLimit from "express-rate-limit"
+import mongoSanitize from "express-mongo-sanitize"
+import xss from "xss-clean"
+import hpp from "hpp"
+import morgan from "morgan"
+import path from "path"
+import { fileURLToPath } from "url"
 
-const { connectDB } = require("./config/database")
-const { initializePassport } = require("./config/passport")
-const { sessionConfig } = require("./config/session")
-const { socketConfig } = require("./config/socket")
-const errorHandler = require("./middleware/errorHandler")
-const logger = require("./utils/logger")
+import { connectDB } from "../config/database.config.js"
+import { initializePassport } from "../config/passport.config.js"
+import { sessionConfig } from "../config/session.config.js"
+import { socketConfig } from "../config/socket.config.js"
+import errorHandler from "../middlewares/errorHandler.js"
+import logger from "../utils/logger.js"
 
-const authRoutes = require("./routes/auth.routes")
-const userRoutes = require("./routes/user.routes")
-const jobRoutes = require("./routes/job.routes")
-const applicationRoutes = require("./routes/application.routes")
-const messageRoutes = require("./routes/message.routes")
-const uploadRoutes = require("./routes/upload.routes")
+import authRoutes from "../routes/auth.routes.js"
+import userRoutes from "../routes/user.route.js"
+import jobRoutes from "../routes/job.routes.js"
+import applicationRoutes from "../routes/application.routes.js"
+import messageRoutes from "../routes/message.routes.js"
+import uploadRoutes from "../routes/upload.routes.js"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 class App {
   constructor() {
     this.app = express()
-    this.server = require("http").createServer(this.app)
-    this.io = require("socket.io")(this.server, {
-      cors: {
-        origin: process.env.FRONTEND_URL || "http://localhost:3000",
-        methods: ["GET", "POST"],
-      },
-    })
-
+    this.server = null
+    this.io = null
     this.initializeDatabase()
     this.initializeMiddlewares()
     this.initializeRoutes()
     this.initializeErrorHandling()
     this.initializeSocket()
+  }
+
+  static async create() {
+    const appInstance = new App()
+    const http = (await import("http")).default
+    const socketio = (await import("socket.io")).default
+    appInstance.server = http.createServer(appInstance.app)
+    appInstance.io = socketio(appInstance.server, {
+      cors: {
+        origin: process.env.FRONTEND_URL || "http://localhost:3000",
+        methods: ["GET", "POST"],
+      },
+    })
+    appInstance.initializeSocket()
+    return appInstance
   }
 
   async initializeDatabase() {
@@ -129,4 +142,4 @@ class App {
   }
 }
 
-module.exports = App
+export default App

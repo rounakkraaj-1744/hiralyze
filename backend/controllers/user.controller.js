@@ -1,7 +1,7 @@
-import userService from "../services/user.service"
-import { ApiResponse } from "../utils/apiResponse"
-import { ApiError } from "../utils/apiError"
-import { asyncHandler } from "../utils/asyncHandler"
+import userService from "../services/user.service.js"
+import { ApiResponse } from "../utils/apiResponse.js"
+import { ApiError } from "../utils/apiError.js"
+import { asyncHandler } from "../utils/asyncHandler.js"
 
 class UserController {
   // Get user profile
@@ -110,4 +110,4 @@ class UserController {
   })
 }
 
-module.exports = new UserController()
+export default new UserController()

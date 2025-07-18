@@ -1,8 +1,8 @@
-const User = require("../models/User.model")
-const Application = require("../models/Application.model")
-const Job = require("../models/Job.model")
-const { ApiError } = require("../utils/apiError")
-const logger = require("../utils/logger")
+import User from "../models/User.model.js"
+import Application from "../models/Application.model.js"
+import Job from "../models/Job.model.js"
+import { ApiError } from "../utils/apiError.js"
+import logger from "../utils/logger.js"
 
 class UserService {
   async findById(userId) {
@@ -279,4 +279,4 @@ class UserService {
   }
 }
 
-module.exports = new UserService()
+export default new UserService()

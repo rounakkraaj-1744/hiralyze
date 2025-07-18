@@ -1,8 +1,8 @@
-const User = require("../models/User.model")
-const bcrypt = require("bcryptjs")
-const crypto = require("crypto")
-const { ApiError } = require("../utils/apiError")
-const logger = require("../utils/logger")
+import User from "../models/User.model.js"
+import bcrypt from "bcryptjs"
+import crypto from "crypto"
+import { ApiError } from "../utils/apiError.js"
+import logger from "../utils/logger.js"
 
 class AuthService {
   async authenticateUser(email, password) {
@@ -112,4 +112,4 @@ class AuthService {
   }
 }
 
-module.exports = new AuthService()
+export default new AuthService()
