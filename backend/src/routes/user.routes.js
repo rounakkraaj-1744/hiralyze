@@ -1,7 +1,7 @@
 import express from "express"
-import userController from "../controllers/user.controller"
-import { requireAuth } from "../middleware/auth"
-import { upload } from "../middleware/upload"
+import userController from "../controllers/user.controller.js"
+import { requireAuth } from "../middlewares/auth.js"
+import { upload } from "../middlewares/upload.js"
 
 const router = express.Router()
 
@@ -17,4 +17,4 @@ router.get("/search", userController.searchUsers)
 router.post("/deactivate", userController.deactivateAccount)
 router.delete("/delete", userController.deleteAccount)
 
-module.exports = router
+export default router

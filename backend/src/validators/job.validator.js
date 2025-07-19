@@ -27,4 +27,4 @@ const validateJobData = (data) => {
   return schema.validate(data)
 }
 
-module.exports = { validateJobData }
+export { validateJobData }

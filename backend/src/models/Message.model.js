@@ -70,4 +70,4 @@ messageSchema.methods.markAsRead = function (userId) {
   return Promise.resolve(this)
 }
 
-module.exports = mongoose.model("Message", messageSchema)
+export default mongoose.model("Message", messageSchema)

@@ -1,6 +1,6 @@
 import express from "express"
-import jobController from "../controllers/job.controller"
-import { requireAuth, requireRole } from "../middleware/auth"
+import jobController from "../controllers/job.controller.js"
+import { requireAuth, requireRole } from "../middlewares/auth.js"
 
 const router = express.Router()
 
@@ -18,4 +18,4 @@ router.patch("/:id/status", requireRole(["recruiter", "admin"]), jobController.t
 router.get("/my/jobs", requireRole(["recruiter", "admin"]), jobController.getMyJobs)
 router.get("/:id/stats", requireRole(["recruiter", "admin"]), jobController.getJobStats)
 
-module.exports = router
+export default router

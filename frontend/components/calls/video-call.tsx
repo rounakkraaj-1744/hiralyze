@@ -29,7 +29,7 @@ export default function VideoCall({ conversationId, participant, onEndCall }: Vi
   const localStreamRef = useRef<MediaStream | null>(null)
   const remoteStreamRef = useRef<MediaStream | null>(null)
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
-  const socket = useSocket(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5000")
+  const socket = useSocket(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:8080")
 
   useEffect(() => {
     initializeCall()

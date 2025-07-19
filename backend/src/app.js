@@ -10,19 +10,19 @@ import morgan from "morgan"
 import path from "path"
 import { fileURLToPath } from "url"
 
-import { connectDB } from "../config/database.config.js"
-import { initializePassport } from "../config/passport.config.js"
-import { sessionConfig } from "../config/session.config.js"
-import { socketConfig } from "../config/socket.config.js"
-import errorHandler from "../middlewares/errorHandler.js"
-import logger from "../utils/logger.js"
+import { connectDB } from "./config/database.config.js"
+import { initializePassport } from "./config/passport.config.js"
+import { sessionConfig } from "./config/session.config.js"
+import { socketConfig } from "./config/socket.config.js"
+import errorHandler from "./middlewares/errorHandler.js"
+import logger from "./utils/logger.js"
 
-import authRoutes from "../routes/auth.routes.js"
-import userRoutes from "../routes/user.route.js"
-import jobRoutes from "../routes/job.routes.js"
-import applicationRoutes from "../routes/application.routes.js"
-import messageRoutes from "../routes/message.routes.js"
-import uploadRoutes from "../routes/upload.routes.js"
+import authRoutes from "./routes/auth.routes.js"
+import userRoutes from "./routes/user.routes.js"
+import jobRoutes from "./routes/job.routes.js"
+import applicationRoutes from "./routes/application.routes.js"
+import messageRoutes from "./routes/message.routes.js"
+import uploadRoutes from "./routes/upload.routes.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -36,15 +36,15 @@ class App {
     this.initializeMiddlewares()
     this.initializeRoutes()
     this.initializeErrorHandling()
-    this.initializeSocket()
+    // Removed initializeSocket() from constructor since this.io is null here
   }
 
   static async create() {
     const appInstance = new App()
     const http = (await import("http")).default
-    const socketio = (await import("socket.io")).default
+    const { Server } = await import("socket.io")
     appInstance.server = http.createServer(appInstance.app)
-    appInstance.io = socketio(appInstance.server, {
+    appInstance.io = new Server(appInstance.server, {
       cors: {
         origin: process.env.FRONTEND_URL || "http://localhost:3000",
         methods: ["GET", "POST"],
@@ -131,11 +131,15 @@ class App {
   }
 
   initializeSocket() {
-    socketConfig(this.io)
+    if (this.io) {
+      socketConfig(this.io)
+    } else {
+      logger.warn("Socket.IO not initialized - skipping socket configuration")
+    }
   }
 
   listen() {
-    const port = process.env.PORT || 5000
+    const port = process.env.PORT || 8080
     this.server.listen(port, () => {
       logger.info(`Server running on port ${port}`)
     })

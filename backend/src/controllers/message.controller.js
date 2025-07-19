@@ -36,7 +36,7 @@ class MessageController {
     const limit = Number.parseInt(req.query.limit) || 50
 
     // Verify user is participant
-    const Conversation = require("../models/Conversation.model")
+    const Conversation = require("../models/Conversation.model.js")
     const conversation = await Conversation.findById(conversationId)
 
     if (!conversation || !conversation.participants.includes(userId)) {
@@ -59,7 +59,7 @@ class MessageController {
     }
 
     // Verify user is participant
-    const Conversation = require("../models/Conversation.model")
+    const Conversation = require("../models/Conversation.model.js")
     const conversation = await Conversation.findById(conversationId)
 
     if (!conversation || !conversation.participants.includes(userId)) {
@@ -88,7 +88,7 @@ class MessageController {
     }
 
     // Verify user is participant
-    const Conversation = require("../models/Conversation.model")
+    const Conversation = require("../models/Conversation.model.js")
     const conversation = await Conversation.findById(conversationId)
 
     if (!conversation || !conversation.participants.includes(userId)) {
@@ -121,7 +121,7 @@ class MessageController {
     const userId = req.user.id
 
     // Verify user is participant
-    const Conversation = require("../models/Conversation.model")
+    const Conversation = require("../models/Conversation.model.js")
     const conversation = await Conversation.findById(conversationId)
 
     if (!conversation || !conversation.participants.includes(userId)) {

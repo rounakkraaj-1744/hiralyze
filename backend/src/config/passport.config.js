@@ -1,8 +1,8 @@
 import passport from "passport"
 import {Strategy as GoogleStrategy} from "passport-google-oauth20"
 import {Strategy as LinkedInStrategy} from "passport-linkedin-oauth2"
-import userService from "../services/user.service"
-import logger from "../utils/logger"
+import userService from "../services/user.service.js"
+import logger from "../utils/logger.js"
 
 const initializePassport = (app) => {
   // Google OAuth
@@ -80,4 +80,4 @@ const initializePassport = (app) => {
   app.use(passport.session())
 }
 
-module.exports = { initializePassport }
+export { initializePassport }

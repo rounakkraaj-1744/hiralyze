@@ -126,4 +126,4 @@ userSchema.methods.updateLastLogin = function () {
   return this.save()
 }
 
-module.exports = mongoose.model("User", userSchema)
+export default mongoose.model("User", userSchema)

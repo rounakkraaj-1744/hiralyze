@@ -140,4 +140,4 @@ applicationSchema.virtual("latestInterview").get(function () {
   return null
 })
 
-module.exports = mongoose.model("Application", applicationSchema)
+export default mongoose.model("Application", applicationSchema)

@@ -153,4 +153,4 @@ jobSchema.methods.incrementViews = function () {
   return this.save()
 }
 
-module.exports = mongoose.model("Job", jobSchema)
+export default mongoose.model("Job", jobSchema)

@@ -1,7 +1,7 @@
 import express from "express"
-import applicationController from "../controllers/application.controller"
-import { requireAuth, requireRole } from "../middleware/auth"
-import { upload } from "../middleware/upload"
+import applicationController from "../controllers/application.controller.js"
+import { requireAuth, requireRole } from "../middlewares/auth.js"
+import { upload } from "../middlewares/upload.js"
 
 const router = express.Router()
 
@@ -18,4 +18,4 @@ router.post("/:id/notes", requireRole(["recruiter", "admin"]), applicationContro
 router.post("/:id/interviews", requireRole(["recruiter", "admin"]), applicationController.scheduleInterview)
 router.get("/jobs/:jobId/analytics", requireRole(["recruiter", "admin"]), applicationController.getApplicationAnalytics)
 
-module.exports = router
+export default router

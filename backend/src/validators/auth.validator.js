@@ -1,5 +1,5 @@
 import Joi from "joi"
-import { ApiError } from "../utils/apiError"
+import { ApiError } from "../utils/apiError.js"
 
 const validateRegistration = (req, res, next) => {
   const schema = Joi.object({
@@ -32,7 +32,7 @@ const validateLogin = (req, res, next) => {
   next()
 }
 
-module.exports = {
+export {
   validateRegistration,
   validateLogin,
 }

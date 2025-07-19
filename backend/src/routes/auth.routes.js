@@ -1,7 +1,7 @@
 import express from "express"
-import authController from "../controllers/auth.controller"
-import { requireAuth } from "../middleware/auth"
-import { validateRegistration, validateLogin } from "../validators/auth.validator"
+import authController from "../controllers/auth.controller.js"
+import { requireAuth } from "../middlewares/auth.js"
+import { validateRegistration, validateLogin } from "../validators/auth.validator.js"
 
 const router = express.Router()
 
@@ -20,4 +20,4 @@ router.post("/change-password", requireAuth, authController.changePassword)
 
 router.get("/me", requireAuth, authController.getCurrentUser)
 
-module.exports = router
+export default router

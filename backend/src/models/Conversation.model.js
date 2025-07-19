@@ -72,4 +72,4 @@ conversationSchema.virtual("unreadCount").get(() => {
   return 0
 })
 
-module.exports = mongoose.model("Conversation", conversationSchema)
+export default mongoose.model("Conversation", conversationSchema)

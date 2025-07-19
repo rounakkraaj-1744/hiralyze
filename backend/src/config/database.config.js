@@ -1,5 +1,5 @@
 import mongoose from "mongoose"
-import logger from "../utils/logger"
+import logger from "../utils/logger.js"
 
 const connectDB = async () => {
   try {
@@ -36,4 +36,4 @@ const disconnectDB = async () => {
   }
 }
 
-module.exports = { connectDB, disconnectDB }
+export { connectDB, disconnectDB }

@@ -1,5 +1,5 @@
-import { ApiError } from "../utils/apiError"
-import logger from "../utils/logger"
+import { ApiError } from "../utils/apiError.js"
+import logger from "../utils/logger.js"
 
 const requireAuth = (req, res, next) => {
   if (req.isAuthenticated() && req.user) {

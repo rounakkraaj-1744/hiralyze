@@ -26,7 +26,7 @@ export default function VoiceCall({ conversationId, participant, onEndCall }: Vo
   const remoteStreamRef = useRef<MediaStream | null>(null)
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
-  const socket = useSocket(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5000")
+  const socket = useSocket(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:8080")
 
   useEffect(() => {
     initializeCall()

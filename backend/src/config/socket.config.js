@@ -1,5 +1,5 @@
-const messageService = require("../services/message.service")
-const logger = require("../utils/logger")
+import messageService from "../services/message.service.js"
+import logger from "../utils/logger.js"
 
 const socketConfig = (io) => {
   io.on("connection", (socket) => {
@@ -107,4 +107,4 @@ const socketConfig = (io) => {
   })
 }
 
-module.exports = { socketConfig }
+export { socketConfig }

@@ -1,9 +1,9 @@
 import express from "express"
-import { requireAuth } from "../middleware/auth"
-import { upload } from "../middleware/upload"
-import { ApiResponse } from "../utils/apiResponse"
-import { ApiError } from "../utils/apiError"
-import { asyncHandler } from "../utils/asyncHandler"
+import { requireAuth } from "../middlewares/auth.js"
+import { upload } from "../middlewares/upload.js"
+import { ApiResponse } from "../utils/apiResponse.js"
+import { ApiError } from "../utils/apiError.js"
+import { asyncHandler } from "../utils/asyncHandler.js"
 
 const router = express.Router()
 
@@ -87,4 +87,4 @@ router.post(
   }),
 )
 
-module.exports = router
+export default router
