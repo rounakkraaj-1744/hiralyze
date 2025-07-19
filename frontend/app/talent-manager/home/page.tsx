@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -19,8 +20,57 @@ import {
   Plus,
 } from "lucide-react"
 import Link from "next/link"
+import { apiClient } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
 
 export default function TalentManagerHome() {
+  const { toast } = useToast()
+  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState({
+    todayInterviews: 0,
+    newApplications: 0,
+    activeJobs: 0,
+    pendingOffers: 0
+  })
+  const [recentApplications, setRecentApplications] = useState<any[]>([])
+  const [myJobs, setMyJobs] = useState<any[]>([])
+
+  useEffect(() => {
+    loadDashboardData()
+  }, [])
+
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true)
+      
+      // Load user stats
+      const statsResponse = await apiClient.getUserStats()
+      setStats(statsResponse.data.stats || {
+        todayInterviews: 0,
+        newApplications: 0,
+        activeJobs: 0,
+        pendingOffers: 0
+      })
+
+      // Load recent applications
+      const applicationsResponse = await apiClient.getMyApplications({ limit: 5 })
+      setRecentApplications(applicationsResponse.data.applications || [])
+
+      // Load my jobs
+      const jobsResponse = await apiClient.getMyJobs({ limit: 5 })
+      setMyJobs(jobsResponse.data.jobs || [])
+
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to load dashboard data",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const todaySchedule = [
     {
       time: "9:00 AM",
@@ -53,11 +103,11 @@ export default function TalentManagerHome() {
   ]
 
   const hiringPipeline = [
-    { stage: "Applied", count: 45, color: "bg-blue-500" },
-    { stage: "Screening", count: 23, color: "bg-yellow-500" },
-    { stage: "Interview", count: 12, color: "bg-purple-500" },
-    { stage: "Offer", count: 5, color: "bg-green-500" },
-    { stage: "Hired", count: 3, color: "bg-emerald-500" },
+    { stage: "Applied", count: stats.newApplications, color: "bg-blue-500" },
+    { stage: "Screening", count: Math.floor(stats.newApplications * 0.5), color: "bg-yellow-500" },
+    { stage: "Interview", count: Math.floor(stats.newApplications * 0.25), color: "bg-purple-500" },
+    { stage: "Offer", count: stats.pendingOffers, color: "bg-green-500" },
+    { stage: "Hired", count: Math.floor(stats.pendingOffers * 0.6), color: "bg-emerald-500" },
   ]
 
   const notifications = [
@@ -131,7 +181,9 @@ export default function TalentManagerHome() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Today's Interviews</p>
-                  <p className="text-2xl font-bold text-gray-900">4</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {loading ? "..." : stats.todayInterviews}
+                  </p>
                 </div>
                 <Calendar className="h-8 w-8 text-amber-600" />
               </div>
@@ -143,7 +195,9 @@ export default function TalentManagerHome() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">New Applications</p>
-                  <p className="text-2xl font-bold text-gray-900">12</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {loading ? "..." : stats.newApplications}
+                  </p>
                 </div>
                 <Users className="h-8 w-8 text-amber-600" />
               </div>
@@ -155,7 +209,9 @@ export default function TalentManagerHome() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Active Jobs</p>
-                  <p className="text-2xl font-bold text-gray-900">8</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {loading ? "..." : stats.activeJobs}
+                  </p>
                 </div>
                 <Briefcase className="h-8 w-8 text-amber-600" />
               </div>
@@ -167,7 +223,9 @@ export default function TalentManagerHome() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Pending Offers</p>
-                  <p className="text-2xl font-bold text-gray-900">3</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {loading ? "..." : stats.pendingOffers}
+                  </p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-amber-600" />
               </div>
@@ -198,23 +256,22 @@ export default function TalentManagerHome() {
                     <div key={index} className="flex items-center space-x-4 p-3 border rounded-lg hover:bg-gray-50">
                       <div className="flex-shrink-0">
                         <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
-                          <Clock className="h-5 w-5 text-amber-600" />
+                          <Clock className="h-6 w-6 text-amber-600" />
                         </div>
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-medium text-gray-900">{item.candidate}</h4>
-                          <span className="text-sm text-gray-500">{item.time}</span>
-                        </div>
-                        <p className="text-sm text-gray-600">{item.position}</p>
-                        <p className="text-xs text-gray-500">{item.type}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900">{item.time}</p>
+                        <p className="text-sm text-gray-600">{item.candidate}</p>
+                        <p className="text-xs text-gray-500">{item.position}</p>
                       </div>
-                      <div className="flex-shrink-0">
-                        {item.status === "completed" ? (
-                          <CheckCircle className="h-5 w-5 text-green-500" />
-                        ) : (
-                          <AlertCircle className="h-5 w-5 text-amber-500" />
-                        )}
+                      <div className="flex items-center space-x-2">
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          item.status === 'completed' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {item.status === 'completed' ? 'Completed' : 'Upcoming'}
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -222,114 +279,172 @@ export default function TalentManagerHome() {
               </CardContent>
             </Card>
 
-            {/* Hiring Pipeline */}
+            {/* Recent Applications */}
             <Card>
               <CardHeader>
-                <CardTitle>Hiring Pipeline</CardTitle>
-                <CardDescription>Current status of all candidates in your pipeline</CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Recent Applications</CardTitle>
+                    <CardDescription>Latest job applications from candidates</CardDescription>
+                  </div>
+                  <Link href="/talent-manager/candidates">
+                    <Button variant="outline" size="sm">
+                      View All
+                    </Button>
+                  </Link>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {hiringPipeline.map((stage, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-3 h-3 rounded-full ${stage.color}`}></div>
-                        <span className="font-medium text-gray-900">{stage.stage}</span>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <span className="text-sm text-gray-600">{stage.count} candidates</span>
-                        <div className="w-24">
-                          <Progress value={(stage.count / 45) * 100} className="h-2" />
+                {loading ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="flex items-center space-x-4 p-3 border rounded-lg animate-pulse">
+                        <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                        <div className="flex-1 space-y-2">
+                          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : recentApplications.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500">No recent applications</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {recentApplications.slice(0, 5).map((application) => (
+                      <div key={application._id} className="flex items-center space-x-4 p-3 border rounded-lg hover:bg-gray-50">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={application.candidate?.avatar} />
+                          <AvatarFallback>
+                            {application.candidate?.firstName?.charAt(0) || "A"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900">
+                            {application.candidate?.firstName} {application.candidate?.lastName}
+                          </p>
+                          <p className="text-sm text-gray-600">{application.job?.title}</p>
+                          <p className="text-xs text-gray-500">
+                            Applied {new Date(application.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            application.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            application.status === 'approved' ? 'bg-green-100 text-green-800' :
+                            application.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {application.status}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
 
           {/* Right Column */}
           <div className="space-y-6">
-            {/* Notifications */}
+            {/* Hiring Pipeline */}
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Notifications</CardTitle>
-                  <Button variant="ghost" size="sm">
-                    Mark all read
-                  </Button>
-                </div>
+                <CardTitle>Hiring Pipeline</CardTitle>
+                <CardDescription>Current stage distribution</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {notifications.map((notification) => (
-                    <div
-                      key={notification.id}
-                      className={`p-3 rounded-lg border ${notification.unread ? "bg-blue-50 border-blue-200" : "bg-gray-50"}`}
-                    >
-                      <p className="text-sm font-medium text-gray-900">{notification.message}</p>
-                      <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
+                <div className="space-y-4">
+                  {hiringPipeline.map((stage, index) => (
+                    <div key={index} className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="font-medium">{stage.stage}</span>
+                        <span className="text-gray-600">{stage.count}</span>
+                      </div>
+                      <Progress value={(stage.count / Math.max(...hiringPipeline.map(s => s.count))) * 100} className="h-2" />
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Quick Actions */}
+            {/* Active Jobs */}
             <Card>
               <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Active Jobs</CardTitle>
+                  <Link href="/talent-manager/jobs">
+                    <Button variant="outline" size="sm">
+                      View All
+                    </Button>
+                  </Link>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <Link href="/post-job">
-                  <Button className="w-full justify-start bg-amber-600 hover:bg-amber-700">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Post New Job
-                  </Button>
-                </Link>
-                <Link href="/talent-manager/candidates">
-                  <Button variant="outline" className="w-full justify-start bg-transparent">
-                    <Users className="h-4 w-4 mr-2" />
-                    Review Applications
-                  </Button>
-                </Link>
-                <Link href="/talent-manager/schedule">
-                  <Button variant="outline" className="w-full justify-start bg-transparent">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Schedule Interview
-                  </Button>
-                </Link>
+              <CardContent>
+                {loading ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="p-3 border rounded-lg animate-pulse">
+                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : myJobs.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500">No active jobs</p>
+                    <Link href="/post-job">
+                      <Button size="sm" className="mt-2">
+                        Post a Job
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {myJobs.slice(0, 5).map((job) => (
+                      <div key={job._id} className="p-3 border rounded-lg hover:bg-gray-50">
+                        <p className="text-sm font-medium text-gray-900">{job.title}</p>
+                        <p className="text-xs text-gray-600">{job.company}</p>
+                        <div className="flex items-center justify-between mt-2">
+                          <span className="text-xs text-gray-500">{job.location}</span>
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            job.status === 'active' ? 'bg-green-100 text-green-800' :
+                            job.status === 'draft' ? 'bg-gray-100 text-gray-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {job.status}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
-            {/* Recent Hires */}
+            {/* Notifications */}
             <Card>
               <CardHeader>
-                <CardTitle>Recent Hires</CardTitle>
+                <CardTitle>Recent Notifications</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                      <AvatarFallback>ER</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium">Emily Rodriguez</p>
-                      <p className="text-xs text-gray-500">UX Designer</p>
+                <div className="space-y-4">
+                  {notifications.map((notification) => (
+                    <div key={notification.id} className="flex items-start space-x-3">
+                      <div className={`w-2 h-2 rounded-full mt-2 ${
+                        notification.unread ? 'bg-blue-500' : 'bg-gray-300'
+                      }`}></div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-900">{notification.message}</p>
+                        <p className="text-xs text-gray-500">{notification.time}</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                      <AvatarFallback>JD</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium">John Davis</p>
-                      <p className="text-xs text-gray-500">Backend Developer</p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
