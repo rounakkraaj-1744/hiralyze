@@ -6,6 +6,8 @@ class Settings(BaseSettings):
     # API Configuration
     HOST: str = "0.0.0.0"
     PORT: int = 8000
+    API_HOST: str = "0.0.0.0"  # Added for compatibility
+    API_PORT: int = 8000  # Added for compatibility
     DEBUG: bool = False
     
     # OpenAI Configuration
@@ -32,6 +34,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "ignore"  # Allow extra fields to prevent validation errors
 
 settings = Settings()
 

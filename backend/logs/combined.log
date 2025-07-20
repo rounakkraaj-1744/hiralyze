@@ -25,3 +25,26 @@
 {"level":"info","message":"Server running on port 8080","service":"hr-portal-backend","timestamp":"2025-07-19T10:58:58.799Z"}
 {"level":"info","message":"MongoDB Connected: ac-lcaer74-shard-00-01.ifcniu4.mongodb.net","service":"hr-portal-backend","timestamp":"2025-07-19T10:59:01.621Z"}
 {"level":"info","message":"Database connected successfully","service":"hr-portal-backend","timestamp":"2025-07-19T10:59:01.622Z"}
+{"level":"warn","message":"MongoDB disconnected","service":"hr-portal-backend","timestamp":"2025-07-19T11:23:55.911Z"}
+{"level":"info","message":"MongoDB reconnected","service":"hr-portal-backend","timestamp":"2025-07-19T11:24:06.247Z"}
+{"level":"warn","message":"MongoDB disconnected","service":"hr-portal-backend","timestamp":"2025-07-19T11:39:25.817Z"}
+{"level":"info","message":"MongoDB reconnected","service":"hr-portal-backend","timestamp":"2025-07-19T11:39:36.489Z"}
+{"level":"warn","message":"MongoDB disconnected","service":"hr-portal-backend","timestamp":"2025-07-19T11:54:42.293Z"}
+{"level":"info","message":"MongoDB reconnected","service":"hr-portal-backend","timestamp":"2025-07-19T11:54:52.502Z"}
+{"level":"warn","message":"MongoDB disconnected","service":"hr-portal-backend","timestamp":"2025-07-19T12:01:27.544Z"}
+{"level":"info","message":"MongoDB reconnected","service":"hr-portal-backend","timestamp":"2025-07-19T12:01:37.774Z"}
+{"level":"warn","message":"MongoDB disconnected","service":"hr-portal-backend","timestamp":"2025-07-19T13:05:50.136Z"}
+{"level":"info","message":"MongoDB reconnected","service":"hr-portal-backend","timestamp":"2025-07-19T13:20:59.829Z"}
+{"level":"warn","message":"MongoDB disconnected","service":"hr-portal-backend","timestamp":"2025-07-19T13:36:29.482Z"}
+{"level":"info","message":"MongoDB reconnected","service":"hr-portal-backend","timestamp":"2025-07-19T13:36:39.713Z"}
+{"level":"warn","message":"MongoDB disconnected","service":"hr-portal-backend","timestamp":"2025-07-19T13:51:59.594Z"}
+{"level":"info","message":"MongoDB reconnected","service":"hr-portal-backend","timestamp":"2025-07-19T13:52:09.911Z"}
+{"level":"warn","message":"MongoDB disconnected","service":"hr-portal-backend","timestamp":"2025-07-19T13:58:47.129Z"}
+{"level":"info","message":"MongoDB reconnected","service":"hr-portal-backend","timestamp":"2025-07-19T13:58:57.365Z"}
+{"level":"info","message":"Server running on port 8080","service":"hr-portal-backend","timestamp":"2025-07-19T16:26:55.856Z"}
+{"level":"info","message":"MongoDB Connected: ac-lcaer74-shard-00-01.ifcniu4.mongodb.net","service":"hr-portal-backend","timestamp":"2025-07-19T16:26:56.578Z"}
+{"level":"info","message":"Database connected successfully","service":"hr-portal-backend","timestamp":"2025-07-19T16:26:56.578Z"}
+{"level":"warn","message":"MongoDB disconnected","service":"hr-portal-backend","timestamp":"2025-07-19T18:06:59.906Z"}
+{"level":"info","message":"MongoDB reconnected","service":"hr-portal-backend","timestamp":"2025-07-19T18:07:10.315Z"}
+{"level":"warn","message":"MongoDB disconnected","service":"hr-portal-backend","timestamp":"2025-07-19T18:22:29.287Z"}
+{"level":"info","message":"MongoDB reconnected","service":"hr-portal-backend","timestamp":"2025-07-19T18:22:39.630Z"}
