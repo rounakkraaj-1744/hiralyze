@@ -3,6 +3,8 @@ import {Strategy as GoogleStrategy} from "passport-google-oauth20"
 import {Strategy as LinkedInStrategy} from "passport-linkedin-oauth2"
 import userService from "../services/user.service.js"
 import logger from "../utils/logger.js"
+import dotenv from "dotenv"
+dotenv.config ()
 
 const initializePassport = (app) => {
   // Google OAuth
@@ -33,22 +35,23 @@ const initializePassport = (app) => {
     ),
   )
 
-  // LinkedIn OAuth
+  // LinkedIn OAuth (OpenID Connect)
   passport.use(
     new LinkedInStrategy(
       {
         clientID: process.env.LINKEDIN_CLIENT_ID,
         clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
-        callbackURL: "/auth/linkedin/callback",
-        scope: ["r_emailaddress", "r_liteprofile"],
+        callbackURL: process.env.LINKEDIN_CALLBACK_URL || "http://localhost:8080/auth/linkedin/callback",
+        scope: ["openid", "profile", "email"],
+        state: true,
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
           const userData = {
             linkedinId: profile.id,
-            email: profile.emails[0].value,
+            email: profile.emails && profile.emails[0] ? profile.emails[0].value : undefined,
             name: profile.displayName,
-            profilePhoto: profile.photos[0].value,
+            profilePhoto: profile.photos && profile.photos[0] ? profile.photos[0].value : undefined,
             role: "candidate",
           }
 

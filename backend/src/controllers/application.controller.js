@@ -1,11 +1,12 @@
-import applicationService from "../services/application.service.js"
-import aiService from "../services/ai.service.js"
-import { ApiResponse } from "../utils/apiResponse.js"
-import { ApiError } from "../utils/apiError.js"
-import { asyncHandler } from "../utils/asyncHandler.js"
+import applicationService from"../services/application.service.js"
+import aiService from"../services/ai.service.js"
+import s3Service from"../services/s3.service.js"
+import jobService from"../services/job.service.js"
+import { ApiResponse } from"../utils/apiResponse.js"
+import { ApiError } from"../utils/apiError.js"
+import { asyncHandler } from"../utils/asyncHandler.js"
 
 class ApplicationController {
-  // Apply to job
   applyToJob = asyncHandler(async (req, res) => {
     const jobId = req.params.jobId
     const candidateId = req.user.id
@@ -14,30 +15,76 @@ class ApplicationController {
       throw new ApiError(400, "Resume file is required")
     }
 
-    const applicationData = {
-      job: jobId,
-      candidate: candidateId,
-      resume: {
-        filename: req.file.filename,
-        originalName: req.file.originalname,
-        path: req.file.path,
-        size: req.file.size,
-        mimetype: req.file.mimetype,
-      },
-      coverLetter: req.body.coverLetter,
+    try {
+      const s3Upload = await s3Service.uploadFile(req.file, "resumes")
+
+      const applicationData = {
+        job: jobId,
+        candidate: candidateId,
+        resume: {
+          s3Key: s3Upload.key,
+          s3Url: s3Upload.url,
+          bucket: s3Upload.bucket,
+          filename: s3Upload.key.split("/").pop(),
+          originalName: s3Upload.originalName,
+          size: s3Upload.size,
+          mimetype: s3Upload.mimetype,
+          uploadedAt: new Date(),
+        },
+        coverLetter: req.body.coverLetter,
+      }
+
+      const application = await applicationService.createApplication(applicationData)
+
+      aiService.processResumeAsync(application._id, s3Upload.key, jobId).catch((error) => {
+        console.error("AI processing error:", error)
+      })
+
+      res.status(201).json(new ApiResponse(201, { application }, "Application submitted successfully"))
     }
-
-    const application = await applicationService.createApplication(applicationData)
-
-    // Process resume with AI in background
-    aiService.processResumeAsync(application._id, req.file.path, jobId).catch((error) => {
-      console.error("AI processing error:", error)
-    })
-
-    res.status(201).json(new ApiResponse(201, { application }, "Application submitted successfully"))
+    catch (error) {
+      throw error
+    }
   })
 
-  // Get applications for a job (recruiter)
+  downloadResume = asyncHandler(async (req, res) => {
+    const applicationId = req.params.id
+    const application = await applicationService.getApplicationById(applicationId)
+
+    if (!application) {
+      throw new ApiError(404, "Application not found")
+    }
+
+    const isCandidate = application.candidate._id.toString() === req.user.id
+    const isRecruiter = application.job.postedBy.toString() === req.user.id
+
+    if (!isCandidate && !isRecruiter) {
+      throw new ApiError(403, "Not authorized to download this resume")
+    }
+
+    if (!application.resume || !application.resume.s3Key) {
+      throw new ApiError(404, "Resume not found")
+    }
+
+    try {
+      const signedUrl = await s3Service.getSignedUrl(application.resume.s3Key, 300) // 5 minutes expiry
+
+      res.json(
+        new ApiResponse(
+          200,
+          {
+            downloadUrl: signedUrl,
+            filename: application.resume.originalName,
+            size: application.resume.size,
+          },
+          "Resume download URL generated",
+        ),
+      )
+    } catch (error) {
+      throw new ApiError(500, "Failed to generate download URL")
+    }
+  })
+
   getJobApplications = asyncHandler(async (req, res) => {
     const jobId = req.params.jobId
     const filters = {
@@ -49,8 +96,6 @@ class ApplicationController {
       minScore: req.query.minScore ? Number.parseInt(req.query.minScore) : undefined,
     }
 
-    // Check if user owns the job
-    const jobService = (await import("../services/job.service.js")).default
     const job = await jobService.getJobById(jobId)
 
     if (!job) {
@@ -63,10 +108,21 @@ class ApplicationController {
 
     const result = await applicationService.getApplicationsByJob(jobId, filters)
 
+    for (const application of result.applications) {
+      if (application.resume && application.resume.s3Key) {
+        try {
+          application.resume.downloadUrl = await s3Service.getSignedUrl(application.resume.s3Key, 3600)
+        }
+        catch (error) {
+          console.error("Error generating signed URL:", error)
+          application.resume.downloadUrl = null
+        }
+      }
+    }
+
     res.json(new ApiResponse(200, result, "Applications retrieved successfully"))
   })
 
-  // Get user's applications (candidate)
   getMyApplications = asyncHandler(async (req, res) => {
     const candidateId = req.user.id
     const filters = {
@@ -79,10 +135,20 @@ class ApplicationController {
 
     const result = await applicationService.getApplicationsByCandidate(candidateId, filters)
 
+    for (const application of result.applications) {
+      if (application.resume && application.resume.s3Key) {
+        try {
+          application.resume.downloadUrl = await s3Service.getSignedUrl(application.resume.s3Key, 3600)
+        }
+        catch (error) {
+          console.error("Error generating signed URL:", error)
+          application.resume.downloadUrl = null
+        }
+      }
+    }
     res.json(new ApiResponse(200, result, "My applications retrieved successfully"))
   })
 
-  // Get single application
   getApplication = asyncHandler(async (req, res) => {
     const applicationId = req.params.id
     const application = await applicationService.getApplicationById(applicationId)
@@ -91,7 +157,6 @@ class ApplicationController {
       throw new ApiError(404, "Application not found")
     }
 
-    // Check authorization
     const isCandidate = application.candidate._id.toString() === req.user.id
     const isRecruiter = application.job.postedBy.toString() === req.user.id
 
@@ -99,10 +164,19 @@ class ApplicationController {
       throw new ApiError(403, "Not authorized to view this application")
     }
 
+    // Generate signed URL for resume if exists
+    if (application.resume && application.resume.s3Key) {
+      try {
+        application.resume.downloadUrl = await s3Service.getSignedUrl(application.resume.s3Key, 3600)
+      } catch (error) {
+        console.error("Error generating signed URL:", error)
+        application.resume.downloadUrl = null
+      }
+    }
+
     res.json(new ApiResponse(200, { application }, "Application retrieved successfully"))
   })
 
-  // Update application status (recruiter)
   updateApplicationStatus = asyncHandler(async (req, res) => {
     const applicationId = req.params.id
     const { status, note } = req.body
@@ -117,7 +191,6 @@ class ApplicationController {
       throw new ApiError(404, "Application not found")
     }
 
-    // Check if user owns the job
     if (application.job.postedBy.toString() !== req.user.id) {
       throw new ApiError(403, "Not authorized to update this application")
     }
@@ -132,7 +205,6 @@ class ApplicationController {
     res.json(new ApiResponse(200, { application: updatedApplication }, "Application status updated successfully"))
   })
 
-  // Withdraw application (candidate)
   withdrawApplication = asyncHandler(async (req, res) => {
     const applicationId = req.params.id
     const { reason } = req.body
@@ -142,7 +214,6 @@ class ApplicationController {
       throw new ApiError(404, "Application not found")
     }
 
-    // Check if user owns the application
     if (application.candidate._id.toString() !== req.user.id) {
       throw new ApiError(403, "Not authorized to withdraw this application")
     }
@@ -152,7 +223,6 @@ class ApplicationController {
     res.json(new ApiResponse(200, { application: updatedApplication }, "Application withdrawn successfully"))
   })
 
-  // Add note to application (recruiter)
   addNote = asyncHandler(async (req, res) => {
     const applicationId = req.params.id
     const { content } = req.body
@@ -166,7 +236,6 @@ class ApplicationController {
       throw new ApiError(404, "Application not found")
     }
 
-    // Check if user owns the job
     if (application.job.postedBy.toString() !== req.user.id) {
       throw new ApiError(403, "Not authorized to add notes to this application")
     }
@@ -176,7 +245,6 @@ class ApplicationController {
     res.json(new ApiResponse(200, { application: updatedApplication }, "Note added successfully"))
   })
 
-  // Schedule interview
   scheduleInterview = asyncHandler(async (req, res) => {
     const applicationId = req.params.id
     const interviewData = req.body
@@ -186,7 +254,6 @@ class ApplicationController {
       throw new ApiError(404, "Application not found")
     }
 
-    // Check if user owns the job
     if (application.job.postedBy.toString() !== req.user.id) {
       throw new ApiError(403, "Not authorized to schedule interview for this application")
     }
@@ -199,12 +266,9 @@ class ApplicationController {
     res.json(new ApiResponse(200, { application: updatedApplication }, "Interview scheduled successfully"))
   })
 
-  // Get application analytics (recruiter)
   getApplicationAnalytics = asyncHandler(async (req, res) => {
     const jobId = req.params.jobId
 
-    // Check if user owns the job
-    const jobService = (await import("../services/job.service.js")).default
     const job = await jobService.getJobById(jobId)
 
     if (!job) {

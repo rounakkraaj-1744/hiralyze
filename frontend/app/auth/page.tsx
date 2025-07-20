@@ -10,17 +10,92 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Mail, Lock, User, Phone, BarChart3 } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [loginForm, setLoginForm] = useState({ email: "", password: "" })
+  const [signupForm, setSignupForm] = useState({ firstName: "", lastName: "", email: "", phone: "", role: "candidate", password: "", confirmPassword: "" })
+  const router = useRouter()
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Handle login form input
+  const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLoginForm({ ...loginForm, [e.target.id]: e.target.value })
+  }
+
+  // Handle signup form input
+  const handleSignupChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSignupForm({ ...signupForm, [e.target.id]: e.target.value })
+  }
+
+  // Handle signup role select
+  const handleRoleChange = (value: string) => {
+    setSignupForm({ ...signupForm, role: value })
+  }
+
+  // Login submit
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    // Simulate API call
-    setTimeout(() => {
+    setError("")
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(loginForm),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Login failed")
+      router.push("/profile")
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
       setIsLoading(false)
-    }, 2000)
+    }
+  }
+
+  // Signup submit
+  const handleSignupSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setError("")
+    if (signupForm.password !== signupForm.confirmPassword) {
+      setError("Passwords do not match")
+      setIsLoading(false)
+      return
+    }
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: signupForm.firstName + " " + signupForm.lastName,
+          email: signupForm.email,
+          password: signupForm.password,
+          role: signupForm.role,
+          phone: signupForm.phone,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Signup failed")
+      router.push("/profile")
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Google/LinkedIn OAuth
+  const handleGoogleOAuth = () => {
+    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/google`
+  }
+
+  const handleLinkedInOAuth = () => {
+    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/linkedin`
   }
 
   return (
@@ -47,12 +122,12 @@ export default function AuthPage() {
             <TabsContent value="signin">
               <CardTitle>Sign In</CardTitle>
               <CardDescription>Enter your credentials to access your account</CardDescription>
-              <form onSubmit={handleSubmit} className="space-y-4 mt-6">
+              <form onSubmit={handleLoginSubmit} className="space-y-4 mt-6">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input id="email" type="email" placeholder="Enter your email" className="pl-10" required />
+                    <Input id="email" type="email" placeholder="Enter your email" className="pl-10" required value={loginForm.email} onChange={handleLoginChange} />
                   </div>
                 </div>
 
@@ -60,7 +135,7 @@ export default function AuthPage() {
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input id="password" type="password" placeholder="Enter your password" className="pl-10" required />
+                    <Input id="password" type="password" placeholder="Enter your password" className="pl-10" required value={loginForm.password} onChange={handleLoginChange} />
                   </div>
                 </div>
 
@@ -73,25 +148,26 @@ export default function AuthPage() {
                 <Button type="submit" className="w-full bg-amber-600 hover:bg-amber-700" disabled={isLoading}>
                   {isLoading ? "Signing in..." : "Sign In"}
                 </Button>
+                {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
               </form>
             </TabsContent>
 
             <TabsContent value="signup">
               <CardTitle>Create Account</CardTitle>
               <CardDescription>Fill in your details to get started</CardDescription>
-              <form onSubmit={handleSubmit} className="space-y-4 mt-6">
+              <form onSubmit={handleSignupSubmit} className="space-y-4 mt-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="firstName">First Name</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input id="firstName" placeholder="First name" className="pl-10" required />
+                      <Input id="firstName" placeholder="First name" className="pl-10" required value={signupForm.firstName} onChange={handleSignupChange} />
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="lastName">Last Name</Label>
-                    <Input id="lastName" placeholder="Last name" required />
+                    <Input id="lastName" placeholder="Last name" required value={signupForm.lastName} onChange={handleSignupChange} />
                   </div>
                 </div>
 
@@ -99,7 +175,7 @@ export default function AuthPage() {
                   <Label htmlFor="signupEmail">Email</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input id="signupEmail" type="email" placeholder="Enter your email" className="pl-10" required />
+                    <Input id="email" type="email" placeholder="Enter your email" className="pl-10" required value={signupForm.email} onChange={handleSignupChange} />
                   </div>
                 </div>
 
@@ -107,13 +183,13 @@ export default function AuthPage() {
                   <Label htmlFor="phone">Phone Number</Label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input id="phone" type="tel" placeholder="Enter your phone number" className="pl-10" required />
+                    <Input id="phone" type="tel" placeholder="Enter your phone number" className="pl-10" required value={signupForm.phone} onChange={handleSignupChange} />
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="role">Role</Label>
-                  <Select required>
+                  <Select required value={signupForm.role} onValueChange={handleRoleChange}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select your role" />
                     </SelectTrigger>
@@ -131,11 +207,13 @@ export default function AuthPage() {
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
-                      id="signupPassword"
+                      id="password"
                       type="password"
                       placeholder="Create a password"
                       className="pl-10"
                       required
+                      value={signupForm.password}
+                      onChange={handleSignupChange}
                     />
                   </div>
                 </div>
@@ -150,6 +228,8 @@ export default function AuthPage() {
                       placeholder="Confirm your password"
                       className="pl-10"
                       required
+                      value={signupForm.confirmPassword}
+                      onChange={handleSignupChange}
                     />
                   </div>
                 </div>
@@ -157,6 +237,7 @@ export default function AuthPage() {
                 <Button type="submit" className="w-full bg-amber-600 hover:bg-amber-700" disabled={isLoading}>
                   {isLoading ? "Creating account..." : "Create Account"}
                 </Button>
+                {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
               </form>
             </TabsContent>
           </Tabs>
@@ -175,7 +256,7 @@ export default function AuthPage() {
           </div>
 
           <div className="space-y-4 mt-6">
-            <Button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 border border-gray-300 py-3">
+            <Button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 border border-gray-300 py-3" onClick={() => handleGoogleOAuth()}> 
               <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
                 <path
                   fill="currentColor"
@@ -197,7 +278,7 @@ export default function AuthPage() {
               Continue with Google
             </Button>
 
-            <Button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 border border-gray-300 py-3">
+            <Button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 border border-gray-300 py-3" onClick={() => handleLinkedInOAuth()}> 
               <svg className="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
               </svg>

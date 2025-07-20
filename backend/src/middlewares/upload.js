@@ -2,79 +2,82 @@ import multer from "multer"
 import path from "path"
 import fs from "fs"
 import { ApiError } from "../utils/apiError.js"
+import { fileURLToPath } from "url";
 
-// Ensure upload directories exist
-const uploadDirs = {
-  resumes: "uploads/resumes",
-  photos: "uploads/photos",
-  documents: "uploads/documents",
-  messages: "uploads/messages",
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Create uploads directory if it doesn't exist
+const uploadDir = path.join(__dirname, "../../uploads")
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true })
 }
 
-Object.values(uploadDirs).forEach((dir) => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true })
-  }
-})
-
-// Storage configuration
+// Configure multer for temporary local storage before S3 upload
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    let uploadPath = uploadDirs.documents // default
-
-    if (req.route.path.includes("resume") || req.route.path.includes("apply")) {
-      uploadPath = uploadDirs.resumes
-    } else if (req.route.path.includes("photo")) {
-      uploadPath = uploadDirs.photos
-    } else if (req.route.path.includes("message")) {
-      uploadPath = uploadDirs.messages
-    }
-
-    cb(null, uploadPath)
+    cb(null, uploadDir)
   },
   filename: (req, file, cb) => {
+    // Generate unique filename with timestamp
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9)
-    const ext = path.extname(file.originalname)
-    cb(null, file.fieldname + "-" + uniqueSuffix + ext)
+    const fileExtension = path.extname(file.originalname)
+    cb(null, file.fieldname + "-" + uniqueSuffix + fileExtension)
   },
 })
 
-// File filter
+// File filter function
 const fileFilter = (req, file, cb) => {
+  // Define allowed file types
   const allowedTypes = {
     resume: [".pdf", ".doc", ".docx"],
     photo: [".jpg", ".jpeg", ".png", ".gif"],
-    document: [".pdf", ".doc", ".docx", ".txt"],
-    message: [".pdf", ".doc", ".docx", ".jpg", ".jpeg", ".png", ".gif", ".txt"],
+    document: [".pdf", ".doc", ".docx", ".txt", ".rtf"],
   }
 
-  const ext = path.extname(file.originalname).toLowerCase()
-  let fileType = "document" // default
+  const fileExtension = path.extname(file.originalname).toLowerCase()
+  const fieldName = file.fieldname
 
-  if (req.route.path.includes("resume") || req.route.path.includes("apply")) {
-    fileType = "resume"
-  }
-  else if (req.route.path.includes("photo")) {
-    fileType = "photo"
-  }
-  else if (req.route.path.includes("message")) {
-    fileType = "message"
+  // Check if field name is valid
+  if (!allowedTypes[fieldName]) {
+    return cb(new ApiError(400, `Invalid field name: ${fieldName}`), false)
   }
 
-  if (allowedTypes[fileType].includes(ext)) {
-    cb(null, true)
+  // Check if file type is allowed for this field
+  if (!allowedTypes[fieldName].includes(fileExtension)) {
+    return cb(
+      new ApiError(400, `Invalid file type for ${fieldName}. Allowed types: ${allowedTypes[fieldName].join(", ")}`),
+      false,
+    )
   }
-  else {
-    cb(new ApiError(400, `Invalid file type. Allowed types: ${allowedTypes[fileType].join(", ")}`), false)
-  }
+
+  cb(null, true)
 }
 
+// Configure multer
 const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
+    files: 1, // Only one file at a time
   },
 })
 
-export { upload }
+// Error handling middleware for multer
+const handleMulterError = (error, req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    if (error.code === "LIMIT_FILE_SIZE") {
+      return next(new ApiError(400, "File too large. Maximum size is 10MB"))
+    }
+    if (error.code === "LIMIT_FILE_COUNT") {
+      return next(new ApiError(400, "Too many files. Only one file allowed"))
+    }
+    if (error.code === "LIMIT_UNEXPECTED_FILE") {
+      return next(new ApiError(400, "Unexpected field name"))
+    }
+  }
+  next(error)
+}
+
+export {upload, handleMulterError}

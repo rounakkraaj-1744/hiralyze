@@ -13,11 +13,18 @@ const applicationSchema = new mongoose.Schema(
       required: true,
     },
     resume: {
+      s3Key: String,
+      s3Url: String,
+      bucket: String,
       filename: String,
       originalName: String,
       path: String,
       size: Number,
       mimetype: String,
+      uploadedAt: {
+        type: Date,
+        default: Date.now
+      }
     },
     coverLetter: {
       type: String,

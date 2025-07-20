@@ -30,35 +30,38 @@ class AuthController {
 
         user.updateLastLogin()
 
-        return res.redirect(`${process.env.FRONTEND_URL}/dashboard`)
+        return res.redirect(`${process.env.FRONTEND_URL}/profile`)
       })
     })(req, res, next)
   })
 
-  linkedinAuth = passport.authenticate("linkedin")
+  linkedinAuth = passport.authenticate("linkedin", {
+    scope: ["openid", "profile", "email"],
+    state: true,
+  })
 
   linkedinCallback = asyncHandler(async (req, res, next) => {
-    passport.authenticate("linkedin", { failureRedirect: "/login" }, async (err, user) => {
+    passport.authenticate("linkedin", { failureRedirect: "/login" }, async (err, user, info) => {
       if (err) {
-        logger.error("LinkedIn OAuth error:", err)
-        return res.redirect(`${process.env.FRONTEND_URL}/auth?error=oauth_failed`)
+        logger.error("LinkedIn OAuth error:", err, info);
+        return res.redirect(`${process.env.FRONTEND_URL}/auth?error=oauth_failed`);
       }
 
       if (!user) {
-        return res.redirect(`${process.env.FRONTEND_URL}/auth?error=oauth_cancelled`)
+        logger.error("LinkedIn OAuth: No user returned", info);
+        return res.redirect(`${process.env.FRONTEND_URL}/auth?error=oauth_cancelled`);
       }
 
       req.logIn(user, (err) => {
         if (err) {
-          logger.error("Login error:", err)
-          return res.redirect(`${process.env.FRONTEND_URL}/auth?error=login_failed`)
+          logger.error("Login error:", err);
+          return res.redirect(`${process.env.FRONTEND_URL}/auth?error=login_failed`);
         }
 
-        user.updateLastLogin()
-
-        return res.redirect(`${process.env.FRONTEND_URL}/dashboard`)
-      })
-    })(req, res, next)
+        user.updateLastLogin();
+        return res.redirect(`${process.env.FRONTEND_URL}/profile`);
+      });
+    })(req, res, next);
   })
 
   login = asyncHandler(async (req, res) => {
