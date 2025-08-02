@@ -27,6 +27,7 @@ class UserService {
 
   async findOrCreateUser(userData, provider) {
     try {
+      console.log("findOrCreateUser called with:", userData, provider);
       let user
 
       if (provider === "google") {
@@ -36,10 +37,20 @@ class UserService {
       }
 
       if (user) {
-        user.name = userData.name
-        user.profilePhoto = userData.profilePhoto
+        user.name = userData.name || user.name
+        user.profilePhoto = userData.profilePhoto || user.profilePhoto
         user.lastLogin = new Date()
+        
+        if (userData.profile) {
+          Object.keys(userData.profile).forEach(key => {
+            if (userData.profile[key] && (!user.profile[key] || userData.profile[key] !== user.profile[key])) {
+              user.profile[key] = userData.profile[key]
+            }
+          })
+        }
+        
         await user.save()
+        console.log("Existing user updated:", user);
         return user
       }
 
@@ -50,18 +61,28 @@ class UserService {
         } else if (provider === "linkedin") {
           existingUser.linkedinId = userData.linkedinId
         }
-        existingUser.profilePhoto = userData.profilePhoto
+        existingUser.profilePhoto = userData.profilePhoto || existingUser.profilePhoto
         existingUser.lastLogin = new Date()
+        
+        if (userData.profile) {
+          Object.keys(userData.profile).forEach(key => {
+            if (userData.profile[key] && !existingUser.profile[key]) {
+              existingUser.profile[key] = userData.profile[key]
+            }
+          })
+        }
+        
         await existingUser.save()
+        console.log("Existing user by email updated:", existingUser);
         return existingUser
       }
 
       user = new User(userData)
       await user.save()
-
-      logger.info(`New user created via ${provider}:`, user.email)
+      console.log("New user created:", user);
       return user
     } catch (error) {
+      console.error("Error in findOrCreateUser:", error);
       logger.error(`Error in findOrCreateUser (${provider}):`, error)
       throw new ApiError(500, "Error creating/finding user")
     }
@@ -69,6 +90,8 @@ class UserService {
 
   async updateProfile(userId, updateData) {
     try {
+      console.log("updateProfile called with:", userId, updateData);
+      
       const allowedUpdates = [
         "name",
         "profile.phone",
@@ -83,11 +106,11 @@ class UserService {
         "profile.website",
         "profile.company",
         "profile.department",
+        "profile.resume",
       ]
 
       const updateObject = {}
 
-      // Handle nested profile updates
       Object.keys(updateData).forEach((key) => {
         if (key === "profile" && typeof updateData[key] === "object") {
           Object.keys(updateData[key]).forEach((profileKey) => {
@@ -100,6 +123,8 @@ class UserService {
         }
       })
 
+      console.log("Update object:", updateObject);
+
       const user = await User.findByIdAndUpdate(
         userId,
         { $set: updateObject },
@@ -110,9 +135,11 @@ class UserService {
         throw new ApiError(404, "User not found")
       }
 
+      console.log("User profile updated successfully:", user);
       logger.info(`User profile updated: ${user.email}`)
       return user
     } catch (error) {
+      console.error("Error updating user profile:", error);
       logger.error("Error updating user profile:", error)
       if (error instanceof ApiError) throw error
       throw new ApiError(500, "Error updating profile")

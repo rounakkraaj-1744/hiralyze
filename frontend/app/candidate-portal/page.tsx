@@ -82,10 +82,12 @@ export default function CandidatePortal() {
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div className="flex items-center space-x-2">
-            <BarChart3 className="h-6 w-6 text-gray-900" />
-            <span className="text-lg font-semibold text-gray-900">Hiralyze</span>
-          </div>
+          <Link href="/">
+            <div className="flex items-center space-x-2">
+              <BarChart3 className="h-6 w-6 text-gray-900" />
+              <span className="text-lg font-semibold text-gray-900">Hiralyze</span>
+            </div>
+          </Link>
           <nav className="hidden md:flex items-center space-x-8">
             <Link href="/" className="text-gray-700 hover:text-gray-900">
               Home
@@ -122,8 +124,8 @@ export default function CandidatePortal() {
           <div className="max-w-2xl mx-auto mb-8">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <Input 
-                placeholder="Search jobs, companies, or keywords..." 
+              <Input
+                placeholder="Search jobs, companies, or keywords..."
                 className="pl-12 py-4 text-lg bg-green-50 border-green-200 rounded-full"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -132,36 +134,36 @@ export default function CandidatePortal() {
             </div>
           </div>
           <div className="flex justify-center space-x-4 mb-8">
-            <Badge 
-              variant="outline" 
+            <Badge
+              variant="outline"
               className={`px-4 py-2 cursor-pointer ${filters.remote ? 'bg-green-50 text-green-700 border-green-200' : ''}`}
               onClick={() => handleFilterChange('remote', !filters.remote)}
             >
               Remote
             </Badge>
-            <Badge 
-              variant="outline" 
+            <Badge
+              variant="outline"
               className={`px-4 py-2 cursor-pointer ${filters.experience === 'entry' ? 'bg-green-50 text-green-700 border-green-200' : ''}`}
               onClick={() => handleFilterChange('experience', filters.experience === 'entry' ? '' : 'entry')}
             >
               Entry-Level
             </Badge>
-            <Badge 
-              variant="outline" 
+            <Badge
+              variant="outline"
               className={`px-4 py-2 cursor-pointer ${filters.experience === 'mid' ? 'bg-green-50 text-green-700 border-green-200' : ''}`}
               onClick={() => handleFilterChange('experience', filters.experience === 'mid' ? '' : 'mid')}
             >
               Mid Level
             </Badge>
-            <Badge 
-              variant="outline" 
+            <Badge
+              variant="outline"
               className={`px-4 py-2 cursor-pointer ${filters.experience === 'senior' ? 'bg-green-50 text-green-700 border-green-200' : ''}`}
               onClick={() => handleFilterChange('experience', filters.experience === 'senior' ? '' : 'senior')}
             >
               Senior Level
             </Badge>
-            <Badge 
-              variant="outline" 
+            <Badge
+              variant="outline"
               className={`px-4 py-2 cursor-pointer ${filters.type === 'internship' ? 'bg-green-50 text-green-700 border-green-200' : ''}`}
               onClick={() => handleFilterChange('type', filters.type === 'internship' ? '' : 'internship')}
             >
@@ -195,7 +197,7 @@ export default function CandidatePortal() {
               Search
             </Button>
           </div>
-          
+
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {[1, 2, 3, 4].map((i) => (
@@ -256,7 +258,7 @@ export default function CandidatePortal() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {job.salary && (
                     <div className="mb-4 text-sm text-gray-600">
                       <span className="font-medium">
@@ -265,7 +267,7 @@ export default function CandidatePortal() {
                       <span className="text-gray-500"> / {job.salary.period}</span>
                     </div>
                   )}
-                  
+
                   <Link href={`/apply/${job._id}`}>
                     <Button className="w-full bg-green-500 hover:bg-green-600 text-white">
                       Apply Now

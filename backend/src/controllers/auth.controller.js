@@ -79,7 +79,6 @@ class AuthController {
         throw new ApiError(500, "Login failed")
       }
 
-      // Update last login
       user.updateLastLogin()
 
       res.json(

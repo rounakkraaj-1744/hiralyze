@@ -4,7 +4,6 @@ import { ApiError } from "../utils/apiError.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 
 class UserController {
-  // Get user profile
   getProfile = asyncHandler(async (req, res) => {
     const userId = req.params.id || req.user.id
     const user = await userService.findById(userId)
@@ -16,7 +15,6 @@ class UserController {
     res.json(new ApiResponse(200, { user }, "Profile retrieved successfully"))
   })
 
-  // Update user profile
   updateProfile = asyncHandler(async (req, res) => {
     const userId = req.user.id
     const updateData = req.body
@@ -26,7 +24,6 @@ class UserController {
     res.json(new ApiResponse(200, { user }, "Profile updated successfully"))
   })
 
-  // Update user settings
   updateSettings = asyncHandler(async (req, res) => {
     const userId = req.user.id
     const settings = req.body
@@ -36,7 +33,6 @@ class UserController {
     res.json(new ApiResponse(200, { user }, "Settings updated successfully"))
   })
 
-  // Upload profile photo
   uploadProfilePhoto = asyncHandler(async (req, res) => {
     if (!req.file) {
       throw new ApiError(400, "No file uploaded")
@@ -50,7 +46,6 @@ class UserController {
     res.json(new ApiResponse(200, { user }, "Profile photo updated successfully"))
   })
 
-  // Get user statistics
   getStats = asyncHandler(async (req, res) => {
     const userId = req.user.id
     const stats = await userService.getUserStats(userId)
@@ -58,7 +53,6 @@ class UserController {
     res.json(new ApiResponse(200, { stats }, "Statistics retrieved successfully"))
   })
 
-  // Search users
   searchUsers = asyncHandler(async (req, res) => {
     const { query, role, page = 1, limit = 10 } = req.query
 
@@ -72,13 +66,11 @@ class UserController {
     res.json(new ApiResponse(200, result, "Users retrieved successfully"))
   })
 
-  // Deactivate account
   deactivateAccount = asyncHandler(async (req, res) => {
     const userId = req.user.id
 
     await userService.deactivateAccount(userId)
 
-    // Logout user
     req.logout((err) => {
       if (err) {
         throw new ApiError(500, "Account deactivated but logout failed")
@@ -88,7 +80,6 @@ class UserController {
     })
   })
 
-  // Delete account
   deleteAccount = asyncHandler(async (req, res) => {
     const userId = req.user.id
     const { password } = req.body
@@ -99,7 +90,6 @@ class UserController {
 
     await userService.deleteAccount(userId, password)
 
-    // Logout user
     req.logout((err) => {
       if (err) {
         throw new ApiError(500, "Account deleted but logout failed")

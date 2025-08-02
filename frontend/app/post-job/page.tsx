@@ -85,10 +85,10 @@ export default function PostJobPage() {
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2">
             <BarChart3 className="h-6 w-6 text-gray-900" />
             <span className="text-lg font-semibold text-gray-900">Hiralyze</span>
-          </div>
+          </Link>
           <nav className="hidden md:flex items-center space-x-8">
             <Link href="/" className="text-gray-700 hover:text-gray-900">
               Home

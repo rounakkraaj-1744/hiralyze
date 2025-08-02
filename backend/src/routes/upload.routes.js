@@ -5,6 +5,8 @@ import { ApiResponse } from "../utils/apiResponse.js"
 import { ApiError } from "../utils/apiError.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import s3Service from "../services/s3.service.js"
+import userService from "../services/user.service.js"
+import logger from "../utils/logger.js"
 
 const router = express.Router()
 
@@ -21,25 +23,107 @@ router.post(
 
     try {
       const s3Upload = await s3Service.uploadFile(req.file, "resumes")
+      
+      const userId = req.user.id
+      await userService.updateProfile(userId, {
+        profile: {
+          resume: s3Upload.url
+        }
+      })
 
-      res.json(
-        new ApiResponse(
-          200,
-          {
-            file: {
-              s3Key: s3Upload.key,
-              s3Url: s3Upload.url,
-              bucket: s3Upload.bucket,
-              filename: s3Upload.key.split("/").pop(),
-              originalName: s3Upload.originalName,
-              size: s3Upload.size,
-              mimetype: s3Upload.mimetype,
-            },
+      try {
+        const aiResponse = await fetch(`${process.env.AI_AGENTS_URL || 'http://localhost:8000'}/parse-resume`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-          "Resume uploaded successfully",
-        ),
-      )
+          body: JSON.stringify({
+            resumeUrl: s3Upload.url,
+            userId: userId,
+            filename: s3Upload.originalName
+          })
+        })
+
+        if (aiResponse.ok) {
+          const aiData = await aiResponse.json()
+          
+          const updateData = {
+            profile: {
+              skills: aiData.skills || [],
+              experience: aiData.experience || "",
+              education: aiData.education || "",
+            }
+          }
+          
+          await userService.updateProfile(userId, updateData)
+          
+          logger.info(`Resume parsed successfully for user ${userId}`)
+          
+          res.json(
+            new ApiResponse(
+              200,
+              {
+                resumeUrl: s3Upload.url,
+                extractedSkills: aiData.skills || [],
+                extractedExperience: aiData.experience || "",
+                extractedEducation: aiData.education || "",
+                file: {
+                  s3Key: s3Upload.key,
+                  s3Url: s3Upload.url,
+                  bucket: s3Upload.bucket,
+                  filename: s3Upload.key.split("/").pop(),
+                  originalName: s3Upload.originalName,
+                  size: s3Upload.size,
+                  mimetype: s3Upload.mimetype,
+                },
+              },
+              "Resume uploaded and parsed successfully",
+            ),
+          )
+        } else {
+          logger.warn(`AI parsing failed for user ${userId}, but resume uploaded successfully`)
+          res.json(
+            new ApiResponse(
+              200,
+              {
+                resumeUrl: s3Upload.url,
+                file: {
+                  s3Key: s3Upload.key,
+                  s3Url: s3Upload.url,
+                  bucket: s3Upload.bucket,
+                  filename: s3Upload.key.split("/").pop(),
+                  originalName: s3Upload.originalName,
+                  size: s3Upload.size,
+                  mimetype: s3Upload.mimetype,
+                },
+              },
+              "Resume uploaded successfully (parsing will be processed in background)",
+            ),
+          )
+        }
+      } catch (aiError) {
+        logger.error(`AI service error for user ${userId}:`, aiError)
+        res.json(
+          new ApiResponse(
+            200,
+            {
+              resumeUrl: s3Upload.url,
+              file: {
+                s3Key: s3Upload.key,
+                s3Url: s3Upload.url,
+                bucket: s3Upload.bucket,
+                filename: s3Upload.key.split("/").pop(),
+                originalName: s3Upload.originalName,
+                size: s3Upload.size,
+                mimetype: s3Upload.mimetype,
+              },
+            },
+            "Resume uploaded successfully (parsing will be processed in background)",
+          ),
+        )
+      }
     } catch (error) {
+      logger.error("Resume upload error:", error)
       throw new ApiError(500, `Failed to upload resume: ${error.message}`)
     }
   }),

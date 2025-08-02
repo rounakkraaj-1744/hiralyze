@@ -1,17 +1,17 @@
 import React from 'react'
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-
+import AuthLink from "@/components/auth-link"
 
 function page() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm sticky top-0 z-50">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2">
             <img src="/logo.png" alt="Hiralyze Logo" className="h-12 w-auto" />
             <span className="text-lg font-semibold text-gray-900">Hiralyze</span>
-          </div>
+          </Link>
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
             <Link href="/" className="text-gray-700 hover:text-gray-900 transition-colors">
               Home
@@ -51,18 +51,12 @@ function page() {
                 Whether you're looking to build your team or advance your career, we've got you covered.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/talent-manager">
-                  <Button className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 text-base sm:text-lg transition">
-                    I'm a Talent Manager
-                  </Button>
-                </Link>
-                <Link href="/candidate-portal">
-                  <Button variant="outline"
-                    className="bg-white text-gray-900 border-white hover:bg-gray-100 px-6 py-3 text-base sm:text-lg transition"
-                  >
-                    I'm a Candidate
-                  </Button>
-                </Link>
+                <AuthLink href="/talent-manager" requiredRole="talent" className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 text-base sm:text-lg transition">
+                  I'm a Talent Manager
+                </AuthLink>
+                <AuthLink href="/candidate-portal" requiredRole="candidate" variant="outline" className="bg-white text-gray-900 border-white hover:bg-gray-100 px-6 py-3 text-base sm:text-lg transition">
+                  I'm a Candidate
+                </AuthLink>
               </div>
             </div>
           </div>
