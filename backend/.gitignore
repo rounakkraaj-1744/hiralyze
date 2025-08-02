@@ -2,3 +2,7 @@
 .env
 /logs
 /uploads
+/.DS_Store
+/src/.DS_Store
+/src/config/.DS_Store
+/src/utils/.DS_Store
